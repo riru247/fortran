@@ -13,81 +13,77 @@ program nanpure
   i=1
   j=1
   
-  do while (i<9)
-    c:do while(j<9)
-      ! 初期値のないマスに1から9まで代入していく
-      if(a0(j,i) )then
-        d:do while(a(j,i) < 9)
-          a(j,i)=a(j,i)+1
-          fg=.true.
-          
 
-          ! 衝突調査
-          e:do k = 1,9
-            if(i /= k .and. a(j,k) == a(j,i)) then
-              fg=.false.
-              exit e
-            end if
-            if(j /= k .and. a(k,i) == a(j,i)) then
-              fg=.false.
-              exit e
-            end if
-          end do e
-          f:do k = 1,9
-            do l = 1,9
-              if ((i-1)/3 == (k-1)/3 .and. (j-1)/3 == (l-1)/3 .and. (i /= k .or. j /= l) .and. a(j,i) == a(l,k)) then
-                fg = .false.
-                exit f
-              end if
-            end do
-          end do f
-          
+  ! (j,i)が(9,9)になるまで処理を続ける
+  do while(i /= 9 .and. j /= 9)
 
-          ! 衝突した時とそうでない時の分岐  
-          if(fg) then
-              exit d
-          else if(a(j,i)==9)then
-            if(j==1) then
-              if(i==1) then
-                  stop "error"
-              else
-                  i=i-2
-                  j=9
-                  exit c
-              end if
-            else 
-              j=j-2
-            end if
-            exit d
+    ! 数字フェーズ
+    100 if(a0(j,i))then
+      a(j,i)=a(j,i)+1
+      
+      ! 衝突調査
+      do k = 1,9
+        if(i /= k .and. a(j,i)==a(j,k))then
+          fg =.false.
+        end if
+        if(j /= k .and. a(j,i)==a(k,i))then
+          fg = .false.
+        end if
+      end do
+      do k = 1,9
+        do l = 1,9
+          if((i /= k .or. j /= l) .and. (i-1)/3 == (k-1)/3 .and. (j-1)/3 == (l-1)/3 .and. a(j,i)==a(l,k))then
+          fg = .false.
           end if
-          
-          
-        end do d
-      ! 初期値がある時
-      else 
-        if(fg)then
-          cycle
-        else 
-          if(j==1) then
-            if(i==1) then
-              stop "error"
-            else
-              i=i-2
-              j=9
-              exit c
-            end if
-          else 
-            j=j-2
-          end if
+        end do
+      end do
+      
+      ! 次の処理の分岐
+      if(fg)then
+        goto 200
+      else if(a(j,i)==9)then
+        goto 200
+      else
+        fg = .true. ! 初期化
+        goto 100
+      end if
+    end if
+  
+    ! 移動フェーズ fgによって前に進むか戻るか決める
+    200 do
+      if(fg)then
+        if(j==9 .and. i ==9)then
+          goto 300
+        else if(j==9)then
+          i=i+1
+          j=1
+        else
+          j=j+1
+        end if
+      else
+        a(j,i)=0
+        if(j==1 .and. i==1)then
+          stop "error"
+        else if(j==1)then
+          i=i-1
+          j=9
+        else
+          j=j-1
         end if
       end if
-      j=j+1
-    end do c
-  i=i+1
-  end do
 
-  !プリント
-  do i=1,9
+      ! 次の処理の分岐
+      if(a0(j,i) .and. a(j,i) /= 9)then
+        goto 100
+        fg = .true. ! 初期化
+      else
+        goto 200
+      end if
+    end do
+
+  end do
+  ! プリント
+  300 do i=1,9
     do j=1,9
       if(j/=9)then 
         print '(I4$)',a(j,i)
